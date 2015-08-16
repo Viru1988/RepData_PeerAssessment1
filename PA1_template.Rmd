@@ -5,9 +5,7 @@ date: "August 12, 2015"
 output: html_document
 ---
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+This is an R Markdown document. Processing the CSV file.
 
 ```{r,echo=TRUE}
 activity<-read.csv("activity.csv")
@@ -16,7 +14,7 @@ activity<-read.csv("activity.csv")
 summary(activity)
 ```
 
-You can also embed plots, for example:
+Plotting the steps by day.
 
 ```{r, echo=TRUE}
 library(ggplot2)
@@ -31,7 +29,6 @@ median(StepsbyDay,na.rm = TRUE)
 ##Finding average of daily activity plan
 average<-aggregate(x=list(steps=activity$steps),by=list(interval=activity$interval),mean,na.rm=TRUE)
 ggplot(data=average,aes(x=interval,y=steps))+geom_step()+xlab("5-min Interval of time taken")+ylab("Average number of steps taken across all days")
-
 #maximum of average steps
 average[which.max(average$steps),]
 
@@ -52,7 +49,6 @@ for(i in 1:nrow(actwona))
 plot3 <- ggplot(actwona, aes(interval, steps)) + geom_bar(stat = "identity",binwidth = .5) +
         labs(title = "Histogram of Total Number of Steps Taken Each Day (Imputed Data)",x = "Time interval", y = "Total Number of Steps")
 print(plot3)
-
 
 actbyDay<-tapply(actwona$steps,actwona$date,sum,na.rm=TRUE)
 #Mean of actual data without missing value
@@ -76,6 +72,5 @@ activitytype$daytype <- as.factor(activitytype$daytype)
 averagebyDay <- aggregate(steps ~ interval + daytype, data = activitytype, mean)
 ggplot(averagebyDay, aes(interval, steps)) + geom_line() + facet_grid(daytype ~ .) + 
     xlab("Time interval") + ylab("Number of steps by day")
-
 
 ```
