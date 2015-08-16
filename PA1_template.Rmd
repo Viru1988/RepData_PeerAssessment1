@@ -1,25 +1,81 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "AcitivityMonitoring"
+author: "Vijay Anand"
+date: "August 12, 2015"
+output: html_document
 ---
 
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-## Loading and preprocessing the data
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-
-
-## What is mean total number of steps taken per day?
-
-
-
-## What is the average daily activity pattern?
+```{r,echo=TRUE}
+activity<-read.csv("activity.csv")
 
 
+summary(activity)
+```
 
-## Imputing missing values
+You can also embed plots, for example:
+
+```{r, echo=TRUE}
+library(ggplot2)
+StepsbyDay<-tapply(activity$steps,activity$date,sum,na.rm=TRUE)
+qplot(StepsbyDay,bandwidth=1000,xlab = "Total steps taken by day")
+#Mean of the steps per day
+mean(StepsbyDay,na.rm = TRUE)
+#Median of the steps per day
+median(StepsbyDay,na.rm = TRUE)
 
 
+##Finding average of daily activity plan
+average<-aggregate(x=list(steps=activity$steps),by=list(interval=activity$interval),mean,na.rm=TRUE)
+ggplot(data=average,aes(x=interval,y=steps))+geom_step()+xlab("5-min Interval of time taken")+ylab("Average number of steps taken across all days")
 
-## Are there differences in activity patterns between weekdays and weekends?
+#maximum of average steps
+average[which.max(average$steps),]
+
+
+##Imputing Missing Values
+#number of missing values
+sum(is.na(activity$steps))
+
+actwona<-activity
+for(i in 1:nrow(actwona))
+{
+    if(is.na(actwona$steps[i]))
+    {
+        actwona$steps[i]<-average[which(actwona$interval[i]==average$interval),]$steps
+    }
+}
+
+plot3 <- ggplot(actwona, aes(interval, steps)) + geom_bar(stat = "identity",binwidth = .5) +
+        labs(title = "Histogram of Total Number of Steps Taken Each Day (Imputed Data)",x = "Time interval", y = "Total Number of Steps")
+print(plot3)
+
+
+actbyDay<-tapply(actwona$steps,actwona$date,sum,na.rm=TRUE)
+#Mean of actual data without missing value
+mean(actbyDay,na.rm = TRUE)
+#Meadian of actual data without missing value
+median(actbyDay,na.rm = TRUE)
+
+```
+
+After imputing the missing values with the average values, there seems to be some difference between the actual mean,median with the  dataset which has na values.
+```{r,echo=TRUE}
+## create new data frame
+activitytype <- actwona
+weekend <- weekdays(as.Date(activitytype$date)) %in% c("Saturday", "Sunday")
+activitytype$daytype <- "weekday"
+
+activitytype$daytype[weekend == TRUE] <- "weekend"
+activitytype$daytype <- as.factor(activitytype$daytype)
+
+#plotting the two different types
+averagebyDay <- aggregate(steps ~ interval + daytype, data = activitytype, mean)
+ggplot(averagebyDay, aes(interval, steps)) + geom_line() + facet_grid(daytype ~ .) + 
+    xlab("Time interval") + ylab("Number of steps by day")
+
+
+```
